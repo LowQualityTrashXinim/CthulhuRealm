@@ -1,0 +1,6 @@
+Items: {
+	GeneralBuilderTool: {
+		DisplayName: General Builder Tool
+		Tooltip: ""
+	}
+}
