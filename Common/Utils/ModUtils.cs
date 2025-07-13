@@ -1,13 +1,14 @@
-﻿using System;
-using Terraria;
+﻿using CthulhuRealm.Common.Utils;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using Terraria;
+using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.Utilities;
-using Terraria.GameContent;
-using Microsoft.Xna.Framework;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework.Graphics;
 using Terraria.WorldBuilding;
 
 namespace CthulhuRealm
@@ -17,52 +18,6 @@ namespace CthulhuRealm
     /// https://github.com/LowQualityTrashXinim/BossRush
     /// </summary>
 	public static partial class ModUtils {
-		//Taken from chatGPT, turn out this kind of stuff is often uses in web developmen, wth ?
-		public static Color FakeHueShift(Color original, float hueShiftDegrees) {
-			float r = original.R / 255f;
-			float g = original.G / 255f;
-			float b = original.B / 255f;
-
-			// Step 3: Approximate hue angle from RGB — not exact HSV, but good for fake shifting
-			float angle = MathF.Atan2(g - b, r - g) * (180f / MathHelper.Pi);
-			if (angle < 0) angle += 360f;
-
-			// Step 4: Add hue offset
-			float newHue = (angle + hueShiftDegrees) % 360f;
-
-			// Step 1: Get grayscale (luminance) 
-			// Xinim note : I have verified that this a actual real thing, https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
-			// Turn out our eyes perceive color in weird way
-			float luminance = 0.299f * original.R + 0.587f * original.G + 0.114f * original.B;
-			Color gray = new Color((int)luminance, (int)luminance, (int)luminance, original.A);
-
-			// Step 2: Get RGB hue color from the hueShiftDegrees (approximate pure hue)
-			Color targetHue = HueToRGB(newHue);
-
-			// Step 3: Estimate original saturation (based on min/max channel spread)
-			float min = MathF.Min(original.R, MathF.Min(original.G, original.B)) / 255f;
-			float max = MathF.Max(original.R, MathF.Max(original.G, original.B)) / 255f;
-			float saturation = max - min;
-
-			// Step 4: Lerp from grayscale to target hue by saturation
-			return Color.Lerp(gray, targetHue, saturation);
-		}
-
-		// Converts hue (0–360) to an RGB color (pure hue, full saturation, mid brightness)
-		private static Color HueToRGB(float hue) {
-			float c = 1f;
-			float x = c * (1 - MathF.Abs((hue / 60f) % 2 - 1));
-			float r = 0, g = 0, b = 0;
-
-			if (hue < 60) { r = c; g = x; }
-			else if (hue < 120) { r = x; g = c; }
-			else if (hue < 180) { g = c; b = x; }
-			else if (hue < 240) { b = c; g = x; }
-			else if (hue < 300) { b = c; r = x; }
-			else { r = c; b = x; }
-
-			return new Color((int)(r * 255), (int)(g * 255), (int)(b * 255));
-		}
 		public static Color ScaleRGB(this Color color, float scale) {
 			color.R = (byte)MathF.Round(color.R * scale);
 			color.B = (byte)MathF.Round(color.B * scale);
@@ -512,8 +467,169 @@ namespace CthulhuRealm
 				float percent = i / (float)length;
 				spriteBatch.Draw(TextureAssets.MagicPixel.Value, new Rectangle(left + i, hitbox.Y + (hitbox.Height - value) / 2, 1, value), Color.Lerp(colorA, colorB, percent));
 			}
-		}
-	}
+        }       /// <summary>
+                /// Return weapon base on world/player progression
+                /// </summary>
+                /// <param name="ReturnWeapon"></param>
+                /// <param name="Amount"></param>
+                /// <param name="rng"></param>
+        public static void GetWeapon(out int ReturnWeapon, out int Amount, int rng = 0)
+        {
+            if (rng > 6 || rng <= 0)
+            {
+                rng = Main.rand.Next(1, 6);
+            }
+            ReturnWeapon = 0;
+            Amount = 1;
+            List<int> DropItemMelee = new List<int>();
+            List<int> DropItemRange = new List<int>();
+            List<int> DropItemMagic = new List<int>();
+            List<int> DropItemSummon = new List<int>();
+            List<int> DropItemMisc = new List<int>();
+            DropItemMelee.AddRange(TerrariaArrayID.MeleePreBoss);
+            DropItemRange.AddRange(TerrariaArrayID.RangePreBoss);
+            DropItemMagic.AddRange(TerrariaArrayID.MagicPreBoss);
+            DropItemSummon.AddRange(TerrariaArrayID.SummonPreBoss);
+            DropItemMisc.AddRange(TerrariaArrayID.SpecialPreBoss);
+            DropItemMelee.AddRange(TerrariaArrayID.MeleePreEoC);
+            DropItemRange.AddRange(TerrariaArrayID.RangePreEoC);
+            DropItemMagic.AddRange(TerrariaArrayID.MagicPreEoC);
+            DropItemSummon.AddRange(TerrariaArrayID.SummonerPreEoC);
+            DropItemMisc.AddRange(TerrariaArrayID.Special);
+            if (NPC.downedBoss1)
+            {
+                DropItemMelee.Add(ItemID.Code1);
+                DropItemMagic.Add(ItemID.ZapinatorGray);
+            }
+            if (NPC.downedBoss2)
+            {
+                DropItemMelee.AddRange(TerrariaArrayID.MeleeEvilBoss);
+                DropItemRange.Add(ItemID.MoltenFury);
+                DropItemRange.Add(ItemID.StarCannon);
+                DropItemRange.Add(ItemID.AleThrowingGlove);
+                DropItemRange.Add(ItemID.Harpoon);
+                DropItemMagic.AddRange(TerrariaArrayID.MagicEvilBoss);
+                DropItemSummon.Add(ItemID.ImpStaff);
+            }
+            if (NPC.downedBoss3)
+            {
+                DropItemMelee.AddRange(TerrariaArrayID.MeleeSkel);
+                DropItemRange.AddRange(TerrariaArrayID.RangeSkele);
+                DropItemMagic.AddRange(TerrariaArrayID.MagicSkele);
+                DropItemSummon.AddRange(TerrariaArrayID.SummonSkele);
+            }
+            if (NPC.downedQueenBee)
+            {
+                DropItemMelee.Add(ItemID.BeeKeeper);
+                DropItemRange.Add(ItemID.BeesKnees); DropItemRange.Add(ItemID.Blowgun);
+                DropItemMagic.Add(ItemID.BeeGun);
+                DropItemSummon.Add(ItemID.HornetStaff);
+                DropItemMisc.Add(ItemID.Beenade);
+            }
+            if (NPC.downedDeerclops)
+            {
+                DropItemRange.Add(ItemID.PewMaticHorn);
+                DropItemMagic.Add(ItemID.WeatherPain);
+                DropItemSummon.Add(ItemID.HoundiusShootius);
+            }
+            if (Main.hardMode)
+            {
+                DropItemMelee.AddRange(TerrariaArrayID.MeleeHM);
+                DropItemRange.AddRange(TerrariaArrayID.RangeHM);
+                DropItemMagic.AddRange(TerrariaArrayID.MagicHM);
+                DropItemSummon.AddRange(TerrariaArrayID.SummonHM);
+            }
+            if (NPC.downedQueenSlime)
+            {
+                DropItemMelee.AddRange(TerrariaArrayID.MeleeQS);
+                DropItemSummon.Add(ItemID.Smolstar);
+            }
+            if (NPC.downedMechBossAny)
+            {
+                DropItemMelee.AddRange(TerrariaArrayID.MeleeMech);
+                DropItemRange.Add(ItemID.SuperStarCannon);
+                DropItemRange.Add(ItemID.DD2PhoenixBow);
+                DropItemMagic.Add(ItemID.UnholyTrident);
+            }
+            if (NPC.downedMechBoss1 && NPC.downedMechBoss2 && NPC.downedMechBoss3)
+            {
+                DropItemMelee.AddRange(TerrariaArrayID.MeleePostAllMechs);
+                DropItemRange.AddRange(TerrariaArrayID.RangePostAllMech);
+                DropItemMagic.AddRange(TerrariaArrayID.MagicPostAllMech);
+                DropItemSummon.AddRange(TerrariaArrayID.SummonPostAllMech);
+            }
+            if (NPC.downedPlantBoss)
+            {
+                DropItemMelee.AddRange(TerrariaArrayID.MeleePostPlant);
+                DropItemRange.AddRange(TerrariaArrayID.RangePostPlant);
+                DropItemMagic.AddRange(TerrariaArrayID.MagicPostPlant);
+                DropItemSummon.AddRange(TerrariaArrayID.SummonPostPlant);
+            }
+            if (NPC.downedGolemBoss)
+            {
+                DropItemMelee.AddRange(TerrariaArrayID.MeleePostGolem);
+                DropItemRange.AddRange(TerrariaArrayID.RangePostGolem);
+                DropItemMagic.AddRange(TerrariaArrayID.MagicPostGolem);
+                DropItemSummon.AddRange(TerrariaArrayID.SummonPostGolem);
+            }
+            if (NPC.downedEmpressOfLight)
+            {
+                DropItemMelee.AddRange(TerrariaArrayID.MeleePreLuna);
+                DropItemRange.AddRange(TerrariaArrayID.RangePreLuna);
+                DropItemMagic.AddRange(TerrariaArrayID.MagicPreLuna);
+                DropItemSummon.AddRange(TerrariaArrayID.SummonPreLuna);
+            }
+            if (NPC.downedAncientCultist)
+            {
+                DropItemMelee.Add(ItemID.DayBreak);
+                DropItemMelee.Add(ItemID.SolarEruption);
+                DropItemRange.Add(ItemID.Phantasm);
+                DropItemRange.Add(ItemID.VortexBeater);
+                DropItemMagic.Add(ItemID.NebulaArcanum);
+                DropItemMagic.Add(ItemID.NebulaBlaze);
+                DropItemSummon.Add(ItemID.StardustCellStaff);
+                DropItemSummon.Add(ItemID.StardustDragonStaff);
+            }
+            if (NPC.downedMoonlord)
+            {
+                DropItemMelee.Add(ItemID.StarWrath);
+                DropItemMelee.Add(ItemID.Meowmere);
+                DropItemMelee.Add(ItemID.Terrarian);
+                DropItemRange.Add(ItemID.SDMG);
+                DropItemRange.Add(ItemID.Celeb2);
+                DropItemMagic.Add(ItemID.LunarFlareBook);
+                DropItemMagic.Add(ItemID.LastPrism);
+                DropItemSummon.Add(ItemID.RainbowCrystalStaff);
+                DropItemSummon.Add(ItemID.MoonlordTurretStaff);
+            }
+            ChooseWeapon(rng, ref ReturnWeapon, ref Amount, DropItemMelee, DropItemRange, DropItemMagic, DropItemSummon, DropItemMisc);
+        }
+        private static void ChooseWeapon(int rng, ref int weapon, ref int amount, List<int> DropItemMelee, List<int> DropItemRange, List<int> DropItemMagic, List<int> DropItemSummon, List<int> DropItemMisc)
+        {
+            switch (rng)
+            {
+                case 0:
+                    weapon = ItemID.None;
+                    break;
+                case 1:
+                    weapon = Main.rand.NextFromCollection(DropItemMelee);
+                    break;
+                case 2:
+                    weapon = Main.rand.NextFromCollection(DropItemRange);
+                    break;
+                case 3:
+                    weapon = Main.rand.NextFromCollection(DropItemMagic);
+                    break;
+                case 4:
+                    weapon = Main.rand.NextFromCollection(DropItemSummon);
+                    break;
+                case 5:
+                    amount += 199;
+                    weapon = Main.rand.NextFromCollection(DropItemMisc);
+                    break;
+            }
+        }
+    }
 	/// <summary>
 	/// Use this to set up your own logic for multi color changing effect, could done this with shader but well
 	/// </summary>
