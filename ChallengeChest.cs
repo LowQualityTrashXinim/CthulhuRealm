@@ -23,7 +23,7 @@ using Terraria.ObjectData;
 
 namespace CthulhuRealm
 {
-    public class ChallengeDropRule : IItemDropRuleCondition
+    public class ChallengeDropRule : IItemDropRuleCondition, IProvideItemConditionDescription
     {
         bool IItemDropRuleCondition.CanDrop(DropAttemptInfo info)
         {
