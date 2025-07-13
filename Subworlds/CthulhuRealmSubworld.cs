@@ -57,6 +57,10 @@ public class PlaceRealm_System : ModSystem
     }
     public void PlaceRealm()
     {
+        Main.spawnTileX = 695;
+        Main.spawnTileY = 343;
+        Main.worldSurface = 400;
+        Main.rockLayer = 479;
 
         StructureData structureData = Generator.GetStructureData("Content/Structures/CthulhuRealmSH", Mod);
         if (Generator.IsInBounds(structureData, new(0, 0)))
@@ -77,7 +81,11 @@ public class PlaceRealm_System : ModSystem
                 && WorldGen.SolidTile(point.X, point.Y + 2) && WorldGen.SolidTile(point.X + 1, point.Y + 2))
             {
                 int success = WorldGen.PlaceChest(point.X, point.Y, TileID.Containers, style: ModContent.TileType<ChallengeChestTile>());
-            
+                if(success != -1)
+                {
+                    Console.WriteLine($"Success placement at {point.ToString()}");
+                }
+                WorldGen.PlaceTile(point.X, point.Y, ModContent.TileType<ChallengeChestTile>());
             }
         }
     }
