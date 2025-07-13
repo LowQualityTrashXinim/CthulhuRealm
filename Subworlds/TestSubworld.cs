@@ -9,7 +9,7 @@ using Terraria.WorldBuilding;
 
 namespace CthulhuRealm.Subworlds;
 
-public class TestSubworld_System : Subworld
+public class TestSubworld_System : SubworldLibrary.Subworld
 {
     public override int Width => 1000;
 

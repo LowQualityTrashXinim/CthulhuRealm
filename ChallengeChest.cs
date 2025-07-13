@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using CthulhuRealm.Common.Utils;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 using System;
@@ -19,7 +20,7 @@ using Terraria.ObjectData;
 
 namespace CthulhuRealm
 {
-	public class ChallengeSpawnRateIncrease : GlobalNPC
+	public class ChallengeGlobalNPC : GlobalNPC
 	{
 		public static bool isActive = false;
         public override void EditSpawnRate(Player player, ref int spawnRate, ref int maxSpawns)
@@ -28,6 +29,17 @@ namespace CthulhuRealm
 				return;
             maxSpawns *= 3;
 			spawnRate /= 10;
+        }
+
+        public override void SetDefaults(NPC entity)
+        {
+			if(NPC.downedBoss2)
+				entity.lifeMax += (int)(entity.lifeMax * .25f);
+
+            if(NPC.downedBoss3)
+			{ 
+				entity.lifeMax += (int)(entity.lifeMax * .25f);
+			}
         }
 	}
     public class ChallengeChest : ModTileEntity
@@ -47,8 +59,8 @@ namespace CthulhuRealm
 			isChallengeActive = true;
 			Projectile.NewProjectileDirect(null,Position.ToWorldCoordinates() + new Vector2(800,0),new Vector2(-20,0),ModContent.ProjectileType<FlameWall>(),1,0,-1,1);
 			Projectile.NewProjectileDirect(null,Position.ToWorldCoordinates() - new Vector2(800,0),new Vector2(20,0),ModContent.ProjectileType<FlameWall>(),1,0,-1,0);
-			ChallengeSpawnRateIncrease.isActive = true;
-			Main.NewText("Survive for 60 Seconds, then the Chest opens!",Color.Yellow);
+			ChallengeGlobalNPC.isActive = true;
+			Main.NewText("Survive for 60 seconds to open the Chest!",Color.Yellow);
 			Main.SkipToTime(0, false);
 		}
         public override void Update()
@@ -59,7 +71,7 @@ namespace CthulhuRealm
 				{
 					isChallengeActive=false;
 					isChallengeCompleted=true;
-					ChallengeSpawnRateIncrease.isActive = false;
+					ChallengeGlobalNPC.isActive = false;
 					for(int i = 0; i < 64; i++)
 						Dust.NewDustPerfect(Position.ToWorldCoordinates(),DustID.AmberBolt,Main.rand.NextVector2CircularEdge(12,12),newColor: Color.Orange).noGravity = true;
 					foreach(NPC npc in Main.ActiveNPCs)
@@ -67,6 +79,7 @@ namespace CthulhuRealm
 						{
 							for(int i = 0; i < 64; i++)
 								Dust.NewDustPerfect(npc.Center,DustID.AmberBolt,Main.rand.NextVector2CircularEdge(4,4),newColor: Color.Orange).noGravity = true;
+							npc.active = false;
 						}
 				}
 				timer--;
@@ -133,7 +146,8 @@ namespace CthulhuRealm
 			}
 			if(tileEntity.isChallengeCompleted)
 			{
-				Main.LocalPlayer.QuickSpawnItem(null,ItemID.TerraBlade);
+				ModUtils.GetWeapon(out int type, out int amount);
+				Main.LocalPlayer.QuickSpawnItem(null,type);
 				WorldGen.KillTile(i,j);
             }
             return false;
