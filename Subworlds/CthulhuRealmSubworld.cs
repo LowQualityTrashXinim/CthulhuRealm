@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StructureHelper.API;
 using StructureHelper.Models;
@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.IO;
 using Terraria.ModLoader;
@@ -19,13 +20,12 @@ namespace CthulhuRealm.Subworlds;
 public class CthulhuRealmSubworld : SubworldLibrary.Subworld
 {
     public override int Width => 1331;
-    public override int Width => 3000;
 
-    public override int Height => 3000;
+    public override int Height => 825;
 
     public override List<GenPass> Tasks => new List<GenPass>
     {
-        new PlaceRealm_Pass("Place Realm",100),
+        new PlaceRealm_Pass("PlaceRealm",1),
     };
 }
 
@@ -37,14 +37,32 @@ public class PlaceRealm_Pass : GenPass
 
     protected override void ApplyPass(GenerationProgress progress, GameConfiguration configuration)
     {
-        progress.Message = "Entering The Realm";
+        ModContent.GetInstance<PlaceRealm_System>().PlaceRealm();
     }
 }
 
 public class PlaceRealm_System : ModSystem
 {
+    public override void PreUpdateWorld()
+    {
+        if(!SubworldSystem.IsActive<CthulhuRealmSubworld>())
+            return;
+
+        TileEntity.UpdateStart();
+		foreach (TileEntity te in TileEntity.ByID.Values)
+		{
+			te.Update();
+		}
+		TileEntity.UpdateEnd();
+    }
     public void PlaceRealm()
     {
+        
+        StructureData structureData = Generator.GetStructureData("Content/Structures/CthulhuRealmSH", Mod);
+        if (Generator.IsInBounds(structureData, new(0, 0)))
+        {
+            Generator.GenerateStructure("Content/Structures/CthulhuRealmSH", new(0, 0), Mod);
+        }
     }
 }
 
@@ -54,24 +72,20 @@ public class IridescentShard : ModItem
     public override string Texture => ModUtils.GetVanillaTexture<Item>(ItemID.BloodMoonStarter);
     public override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)
     {
-        return base.PreDrawInInventory(spriteBatch, position, frame, Color.Pink, Color.Pink, origin, scale);
+        return base.PreDrawInInventory(spriteBatch, position, frame, Color.Pink, itemColor, origin, scale);
     }
     public override void SetDefaults()
     {
-        Item.CloneDefaults(ItemID.Star);
         Item.consumable = false;
         Item.width = Item.height = 32;
         Item.useAnimation = Item.useTime = 20;
         Item.useStyle = ItemUseStyleID.HoldUp;
-        
     }
 
     public override bool? UseItem(Player player)
     {
         if (SubworldSystem.Current == null && player.ItemAnimationJustStarted)
             SubworldSystem.Enter<CthulhuRealmSubworld>();
-        else
-            SubworldSystem.Exit();
         return base.UseItem(player);
     }
 }
