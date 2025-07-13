@@ -21,7 +21,7 @@ public class CthulhuRealmSubworld : SubworldLibrary.Subworld
 {
     public override int Width => 1331;
 
-    public override int Height => 825;
+    public override int Height => 855;
 
     public override List<GenPass> Tasks => new List<GenPass>
     {
@@ -74,12 +74,25 @@ public class PlaceRealm_System : ModSystem
     }
     public void PlaceRealm()
     {
-        
+        Main.spawnTileX = 695;
+        Main.spawnTileY = 343;
+        Main.worldSurface = 400;
+        Main.rockLayer = 479;
+
         StructureData structureData = Generator.GetStructureData("Content/Structures/CthulhuRealmSH", Mod);
         if (Generator.IsInBounds(structureData, new(0, 0)))
         {
             Generator.GenerateStructure("Content/Structures/CthulhuRealmSH", new(0, 0), Mod);
         }
+        //for (int i = 0; i < 99999; i++)
+        //{
+        //    Point point = new(Main.rand.Next(1, 1329), Main.rand.Next(1, 823));
+        //    if (!WorldGen.InWorld(point.X, point.Y))
+        //    {
+        //        continue;
+        //    }
+        //    WorldGen.PlaceChest(point.X, point.Y, TileID.Containers);
+        //}
     }
 }
 
