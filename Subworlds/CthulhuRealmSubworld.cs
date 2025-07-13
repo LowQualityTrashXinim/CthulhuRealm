@@ -1,4 +1,4 @@
-﻿﻿using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StructureHelper.API;
 using StructureHelper.Models;
@@ -45,23 +45,40 @@ public class PlaceRealm_System : ModSystem
 {
     public override void PreUpdateWorld()
     {
-        if(!SubworldSystem.IsActive<CthulhuRealmSubworld>())
+        if (!SubworldSystem.IsActive<CthulhuRealmSubworld>())
             return;
 
         TileEntity.UpdateStart();
-		foreach (TileEntity te in TileEntity.ByID.Values)
-		{
-			te.Update();
-		}
-		TileEntity.UpdateEnd();
+        foreach (TileEntity te in TileEntity.ByID.Values)
+        {
+            te.Update();
+        }
+        TileEntity.UpdateEnd();
     }
     public void PlaceRealm()
     {
-        
+
         StructureData structureData = Generator.GetStructureData("Content/Structures/CthulhuRealmSH", Mod);
         if (Generator.IsInBounds(structureData, new(0, 0)))
         {
             Generator.GenerateStructure("Content/Structures/CthulhuRealmSH", new(0, 0), Mod);
+        }
+        for (int i = 0; i < 99999; i++)
+        {
+            Point point = new(Main.rand.Next(1, 1329), Main.rand.Next(1, 823));
+            if (!WorldGen.InWorld(point.X, point.Y))
+            {
+                continue;
+            }
+            if (WorldGen.TileEmpty(point.X, point.Y)
+                && WorldGen.TileEmpty(point.X + 1, point.Y)
+                && WorldGen.TileEmpty(point.X, point.Y + 1)
+                && WorldGen.TileEmpty(point.X + 1, point.Y + 1)
+                && WorldGen.SolidTile(point.X, point.Y + 2) && WorldGen.SolidTile(point.X + 1, point.Y + 2))
+            {
+                int success = WorldGen.PlaceChest(point.X, point.Y, TileID.Containers, style: ModContent.TileType<ChallengeChestTile>());
+            
+            }
         }
     }
 }
