@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StructureHelper.API;
+using StructureHelper.Models;
 using SubworldLibrary;
 using System;
 using System.Collections.Generic;
@@ -16,9 +18,9 @@ namespace CthulhuRealm.Subworlds;
 
 public class CthulhuRealmSubworld : SubworldLibrary.Subworld
 {
-    public override int Width => 1000;
+    public override int Width => 1331;
 
-    public override int Height => 500;
+    public override int Height => 825;
 
     public override List<GenPass> Tasks => new List<GenPass>
     {
@@ -26,7 +28,7 @@ public class CthulhuRealmSubworld : SubworldLibrary.Subworld
     };
 }
 
-public class PlaceRealm_Pass : GenPass 
+public class PlaceRealm_Pass : GenPass
 {
     public PlaceRealm_Pass(string name, double loadWeight) : base(name, loadWeight)
     {
@@ -39,10 +41,15 @@ public class PlaceRealm_Pass : GenPass
 }
 
 public class PlaceRealm_System : ModSystem
-{ 
-    public void PlaceRealm() 
+{
+    public void PlaceRealm()
     {
-        StructureHelper.API.Generator.GenerateStructure("Content/Structures/CthulhuRealmSH",new(0,0),Mod);
+        
+        StructureData structureData = Generator.GetStructureData("Content/Structures/CthulhuRealmSH", Mod);
+        if (Generator.IsInBounds(structureData, new(0, 0)))
+        {
+            Generator.GenerateStructure("Content/Structures/CthulhuRealmSH", new(0, 0), Mod);
+        }
     }
 }
 
@@ -59,11 +66,12 @@ public class IridescentShard : ModItem
         Item.consumable = false;
         Item.width = Item.height = 32;
         Item.useAnimation = Item.useTime = 20;
+        Item.useStyle = ItemUseStyleID.HoldUp;
     }
 
     public override bool? UseItem(Player player)
     {
-        if(SubworldSystem.Current == null)
+        if (SubworldSystem.Current == null && player.ItemAnimationJustStarted)
             SubworldSystem.Enter<CthulhuRealmSubworld>();
         return base.UseItem(player);
     }
