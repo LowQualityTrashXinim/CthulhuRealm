@@ -3,4 +3,11 @@ Items: {
 		DisplayName: General Builder Tool
 		Tooltip: ""
 	}
+
+	DebugChallengeChest: {
+		DisplayName: Debug Challenge Chest
+		Tooltip: ""
+	}
 }
+
+Projectiles.FlameWall.DisplayName: Flame Wall
