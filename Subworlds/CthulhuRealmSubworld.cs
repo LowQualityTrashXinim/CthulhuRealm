@@ -21,7 +21,7 @@ public class CthulhuRealmSubworld : SubworldLibrary.Subworld
 {
     public override int Width => 1331;
 
-    public override int Height => 825;
+    public override int Height => 855;
 
     public override List<GenPass> Tasks => new List<GenPass>
     {
@@ -67,27 +67,15 @@ public class PlaceRealm_System : ModSystem
         {
             Generator.GenerateStructure("Content/Structures/CthulhuRealmSH", new(0, 0), Mod);
         }
-        for (int i = 0; i < 99999; i++)
-        {
-            Point point = new(Main.rand.Next(1, 1329), Main.rand.Next(1, 823));
-            if (!WorldGen.InWorld(point.X, point.Y))
-            {
-                continue;
-            }
-            if (WorldGen.TileEmpty(point.X, point.Y)
-                && WorldGen.TileEmpty(point.X + 1, point.Y)
-                && WorldGen.TileEmpty(point.X, point.Y + 1)
-                && WorldGen.TileEmpty(point.X + 1, point.Y + 1)
-                && WorldGen.SolidTile(point.X, point.Y + 2) && WorldGen.SolidTile(point.X + 1, point.Y + 2))
-            {
-                int success = WorldGen.PlaceChest(point.X, point.Y, TileID.Containers, style: ModContent.TileType<ChallengeChestTile>());
-                if(success != -1)
-                {
-                    Console.WriteLine($"Success placement at {point.ToString()}");
-                }
-                WorldGen.PlaceTile(point.X, point.Y, ModContent.TileType<ChallengeChestTile>());
-            }
-        }
+        //for (int i = 0; i < 99999; i++)
+        //{
+        //    Point point = new(Main.rand.Next(1, 1329), Main.rand.Next(1, 823));
+        //    if (!WorldGen.InWorld(point.X, point.Y))
+        //    {
+        //        continue;
+        //    }
+        //    WorldGen.PlaceChest(point.X, point.Y, TileID.Containers);
+        //}
     }
 }
 
