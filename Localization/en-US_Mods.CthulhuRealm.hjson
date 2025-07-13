@@ -8,6 +8,11 @@ Items: {
 		DisplayName: Debug Challenge Chest
 		Tooltip: ""
 	}
+
+	IridescentShard: {
+		DisplayName: Iridescent Shard
+		Tooltip: ""
+	}
 }
 
 Projectiles.FlameWall.DisplayName: Flame Wall

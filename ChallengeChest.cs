@@ -296,6 +296,7 @@ namespace CthulhuRealm
                 rect.Draw(position - Main.screenPosition, size: new Vector2(256, 20000));
 
                 Main.pixelShader.CurrentTechnique.Passes[0].Apply();
+                
             }
         }
     }
