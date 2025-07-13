@@ -1,0 +1,70 @@
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using SubworldLibrary;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Terraria;
+using Terraria.ID;
+using Terraria.IO;
+using Terraria.ModLoader;
+using Terraria.WorldBuilding;
+
+namespace CthulhuRealm.Subworlds;
+
+public class CthulhuRealmSubworld : SubworldLibrary.Subworld
+{
+    public override int Width => 1000;
+
+    public override int Height => 500;
+
+    public override List<GenPass> Tasks => new List<GenPass>
+    {
+        new PlaceRealm_Pass("PlaceRealm",1),
+    };
+}
+
+public class PlaceRealm_Pass : GenPass 
+{
+    public PlaceRealm_Pass(string name, double loadWeight) : base(name, loadWeight)
+    {
+    }
+
+    protected override void ApplyPass(GenerationProgress progress, GameConfiguration configuration)
+    {
+        ModContent.GetInstance<PlaceRealm_System>().PlaceRealm();
+    }
+}
+
+public class PlaceRealm_System : ModSystem
+{ 
+    public void PlaceRealm() 
+    {
+        StructureHelper.API.Generator.GenerateStructure("Content/Structures/CthulhuRealmSH",new(0,0),Mod);
+    }
+}
+
+public class IridescentShard : ModItem
+{
+
+    public override string Texture => ModUtils.GetVanillaTexture<Item>(ItemID.BloodMoonStarter);
+    public override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)
+    {
+        return base.PreDrawInInventory(spriteBatch, position, frame, Color.Pink, itemColor, origin, scale);
+    }
+    public override void SetDefaults()
+    {
+        Item.consumable = false;
+        Item.width = Item.height = 32;
+        Item.useAnimation = Item.useTime = 20;
+    }
+
+    public override bool? UseItem(Player player)
+    {
+        if(SubworldSystem.Current == null)
+            SubworldSystem.Enter<CthulhuRealmSubworld>();
+        return base.UseItem(player);
+    }
+}

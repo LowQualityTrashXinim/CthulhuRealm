@@ -2,7 +2,7 @@
 sampler2D image1 : register(s1);
 sampler2D image2 : register(s2);
 sampler2D image3 : register(s3);
-
+float2 uImageSize1;
 float uTime;
 float4 uShaderSpecificData;
 float3 uColor;
@@ -13,8 +13,7 @@ float4 Flames(float4 sampleColor : COLOR0, float2 coords : TEXCOORD0) : COLOR0
     float2 uv = coords * 2.;
     uv -= 0.5;
 
-    float4 noiseTex = tex2D(image1, uv * 2 - uTime);
-    float4 noiseTex2 = tex2D(image1, uv * 2 - uTime * 2);
+    float4 noiseTex = tex2D(image1, uv * float2(1,20) * 2 - uTime);
 
     noiseTex.a = noiseTex.r;
 
@@ -24,7 +23,7 @@ float4 Flames(float4 sampleColor : COLOR0, float2 coords : TEXCOORD0) : COLOR0
     color1.a *= 2;
     color1.rgba *= uShaderSpecificData.x;
     color1 *= 1 / length(uv.x - 0.5) * 0.5;
-    return floor(color1 * 5) / 5;
+    return (floor(color1 * 5) / 5);
 }
     
 technique Technique1
