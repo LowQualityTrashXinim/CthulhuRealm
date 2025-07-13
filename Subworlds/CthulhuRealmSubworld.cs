@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using StructureHelper.API;
+using StructureHelper.Models;
 using SubworldLibrary;
 using System;
 using System.Collections.Generic;
@@ -16,6 +18,7 @@ namespace CthulhuRealm.Subworlds;
 
 public class CthulhuRealmSubworld : SubworldLibrary.Subworld
 {
+    public override int Width => 1331;
     public override int Width => 3000;
 
     public override int Height => 3000;
@@ -26,7 +29,7 @@ public class CthulhuRealmSubworld : SubworldLibrary.Subworld
     };
 }
 
-public class PlaceRealm_Pass : GenPass 
+public class PlaceRealm_Pass : GenPass
 {
     public PlaceRealm_Pass(string name, double loadWeight) : base(name, loadWeight)
     {
@@ -39,8 +42,8 @@ public class PlaceRealm_Pass : GenPass
 }
 
 public class PlaceRealm_System : ModSystem
-{ 
-    public void PlaceRealm() 
+{
+    public void PlaceRealm()
     {
     }
 }
@@ -65,7 +68,7 @@ public class IridescentShard : ModItem
 
     public override bool? UseItem(Player player)
     {
-        if(SubworldSystem.Current == null)
+        if (SubworldSystem.Current == null && player.ItemAnimationJustStarted)
             SubworldSystem.Enter<CthulhuRealmSubworld>();
         else
             SubworldSystem.Exit();

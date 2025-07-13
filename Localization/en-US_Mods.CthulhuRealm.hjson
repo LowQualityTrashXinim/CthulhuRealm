@@ -13,6 +13,11 @@ Items: {
 		DisplayName: Iridescent Shard
 		Tooltip: ""
 	}
+
+	TilePosition: {
+		DisplayName: Tile Position
+		Tooltip: ""
+	}
 }
 
 Projectiles.FlameWall.DisplayName: Flame Wall
