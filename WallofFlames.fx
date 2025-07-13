@@ -13,14 +13,13 @@ float4 Flames(float4 sampleColor : COLOR0, float2 coords : TEXCOORD0) : COLOR0
     float2 uv = coords * 2.;
     uv -= 0.5;
 
-    float4 noiseTex = tex2D(image1, uv * float2(1,20) * 2 - uTime);
+    float4 noiseTex = tex2D(image1, uv * float2(1, 20) + float2(uTime,0) * (2 * step(uv.x, 0.5) + -1));
 
     noiseTex.a = noiseTex.r;
 
     float4 color1 = noiseTex;
     color1.rgba *= (1 / (distance(uv.x, float2(0.5, uv.x)) * 10));
     color1.rgb *= lerp(uSecondaryColor,uColor,uv.x);
-    color1.a *= 2;
     color1.rgba *= uShaderSpecificData.x;
     color1 *= 1 / length(uv.x - 0.5) * 0.5;
     return (floor(color1 * 5) / 5);

@@ -1,4 +1,4 @@
-﻿﻿using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StructureHelper.API;
 using StructureHelper.Models;
@@ -26,6 +26,7 @@ public class CthulhuRealmSubworld : SubworldLibrary.Subworld
     public override List<GenPass> Tasks => new List<GenPass>
     {
         new PlaceRealm_Pass("PlaceRealm",1),
+        new PlaceChests_Pass("PlaceChallengeChests",1)
     };
 }
 
@@ -34,26 +35,42 @@ public class PlaceRealm_Pass : GenPass
     public PlaceRealm_Pass(string name, double loadWeight) : base(name, loadWeight)
     {
     }
-
+    
     protected override void ApplyPass(GenerationProgress progress, GameConfiguration configuration)
     {
         ModContent.GetInstance<PlaceRealm_System>().PlaceRealm();
+
     }
 }
-
+public class PlaceChests_Pass : GenPass
+{
+    public PlaceChests_Pass(string name, double loadWeight) : base(name, loadWeight)
+    {
+    }
+    
+    protected override void ApplyPass(GenerationProgress progress, GameConfiguration configuration)
+    {
+        
+        for(int i = 0; i < SubworldSystem.Current.Width; i++)
+            for(int j = 0; j < SubworldSystem.Current.Height; j++)
+            {
+                WorldGen.PlaceObject(i,j,ModContent.TileType<ChallengeChestTile>(),true);
+            }
+    }
+}
 public class PlaceRealm_System : ModSystem
 {
     public override void PreUpdateWorld()
     {
-        if(!SubworldSystem.IsActive<CthulhuRealmSubworld>())
+        if (!SubworldSystem.IsActive<CthulhuRealmSubworld>())
             return;
 
         TileEntity.UpdateStart();
-		foreach (TileEntity te in TileEntity.ByID.Values)
-		{
-			te.Update();
-		}
-		TileEntity.UpdateEnd();
+        foreach (TileEntity te in TileEntity.ByID.Values)
+        {
+            te.Update();
+        }
+        TileEntity.UpdateEnd();
     }
     public void PlaceRealm()
     {
@@ -66,13 +83,14 @@ public class PlaceRealm_System : ModSystem
     }
 }
 
-public class IridescentShard : ModItem
+public class RealmPortal : ModItem
 {
-
-    public override string Texture => ModUtils.GetVanillaTexture<Item>(ItemID.BloodMoonStarter);
-    public override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)
+    public override void SetStaticDefaults()
     {
-        return base.PreDrawInInventory(spriteBatch, position, frame, Color.Pink, itemColor, origin, scale);
+        ItemID.Sets.AnimatesAsSoul[Type] = true;
+        Main.RegisterItemAnimation(Type, new DrawAnimationVertical(5, 10));
+        ItemID.Sets.ItemIconPulse[Item.type] = true;
+        ItemID.Sets.ItemNoGravity[Item.type] = true;
     }
     public override void SetDefaults()
     {
@@ -81,10 +99,9 @@ public class IridescentShard : ModItem
         Item.useAnimation = Item.useTime = 20;
         Item.useStyle = ItemUseStyleID.HoldUp;
     }
-
     public override bool? UseItem(Player player)
     {
-        if (SubworldSystem.Current == null && player.ItemAnimationJustStarted)
+        if (SubworldSystem.Current == null && player.ItemAnimationJustStarted && player.BuyItem(Item.buyPrice(0,15)))
             SubworldSystem.Enter<CthulhuRealmSubworld>();
         return base.UseItem(player);
     }

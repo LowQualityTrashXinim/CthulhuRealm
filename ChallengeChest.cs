@@ -26,8 +26,8 @@ namespace CthulhuRealm
     public class ChallengeDropRule : IItemDropRuleCondition, IProvideItemConditionDescription
     {
         bool IItemDropRuleCondition.CanDrop(DropAttemptInfo info)
-        {
-            return SubworldSystem.Current == null;
+        {   
+            return SubworldSystem.IsActive<CthulhuRealmSubworld>();
         }
 
         public bool CanShowItemDropInUI()
@@ -48,7 +48,25 @@ namespace CthulhuRealm
             if (SubworldSystem.Current is CthulhuRealmSubworld)
             {
                 Player.AddBuff(BuffID.NoBuilding, 60);
+
             }
+        }
+
+        public override bool CanUseItem(Item item)
+        {
+            if (SubworldSystem.Current is not CthulhuRealmSubworld)
+                return true;    
+
+             if(item.pick > 0 || item.axe > 0 || item.hammer > 0)
+                return false;
+
+             return true;    
+        }
+
+        public override void OnRespawn()
+        {
+            if (SubworldSystem.Current is CthulhuRealmSubworld)
+                SubworldSystem.Exit();
         }
     }
     public class ChallengeGlobalNPC : GlobalNPC
@@ -58,14 +76,15 @@ namespace CthulhuRealm
         {
             if (!isActive)
                 return;
-            maxSpawns *= 3;
-            spawnRate /= 10;
+            spawnRate /= 8;
         }
 
         public override void SetDefaults(NPC entity)
         {
             if (SubworldSystem.Current is not CthulhuRealmSubworld)
                 return;
+
+            entity.knockBackResist *= 0.1f;
 
             if (!Main.hardMode)
             {
@@ -76,29 +95,33 @@ namespace CthulhuRealm
                     entity.lifeMax += (int)(entity.lifeMax * .25f);
             }
             else
-                entity.lifeMax += (int)(entity.lifeMax * .5f);
+                entity.lifeMax += (int)(entity.lifeMax * .25f);
 
             if (NPC.downedMechBossAny)
                 entity.lifeMax += (int)(entity.lifeMax * .25f);
 
             if (NPC.downedPlantBoss)
-                entity.lifeMax += (int)(entity.lifeMax * .75f);
+                entity.lifeMax += (int)(entity.lifeMax * .25f);
 
             if (NPC.downedGolemBoss)
-                entity.lifeMax += (int)(entity.lifeMax * .5f);
+                entity.lifeMax += (int)(entity.lifeMax * .25f);
 
             if (NPC.downedAncientCultist)
-                entity.lifeMax += (int)(entity.lifeMax * 1.25f);
+                entity.lifeMax += (int)(entity.lifeMax * 0.75f);
+
             if (NPC.downedMoonlord)
-                entity.lifeMax += (int)(entity.lifeMax * 1.5f);
+                entity.lifeMax += (int)(entity.lifeMax * .25f);
         }
         // make it so that npcs dont drop items when inside the subworld cuz balance lol
         public override void ModifyNPCLoot(NPC npc, NPCLoot npcLoot)
         {
-            foreach(var rule in npcLoot.Get())
-            {
-                rule.OnSuccess(new LeadingConditionRule(new ChallengeDropRule()));
-            }
+            // dont know how to make it work lol
+            //foreach(IItemDropRule rule in npcLoot.Get())
+            //{
+            //    npcLoot.Remove(rule);
+            //    var challengeRule = new LeadingConditionRule(new ChallengeDropRule()).OnSuccess(rule);
+            //    npcLoot.Add(challengeRule);
+            //}
         }
     }
     public class ChallengeChest : ModTileEntity
@@ -116,14 +139,8 @@ namespace CthulhuRealm
         public void ActivateChallenge()
         {
             isChallengeActive = true;
-            if (SubworldSystem.Current != null)
-            {
-                Projectile.NewProjectileDirect(null, new Vector2(Position.ToWorldCoordinates().X, SubworldSystem.Current.Height / 2f) + new Vector2(800, 0), new Vector2(-20, 0), ModContent.ProjectileType<FlameWall>(), 1, 0, -1, 1);
-                Projectile.NewProjectileDirect(null, new Vector2(Position.ToWorldCoordinates().X, SubworldSystem.Current.Height / 2f) - new Vector2(800, 0), new Vector2(20, 0), ModContent.ProjectileType<FlameWall>(), 1, 0, -1, 0);
-            }
-            else
-                Projectile.NewProjectileDirect(null, Position.ToWorldCoordinates() + new Vector2(800, -5000), new Vector2(-20, 0), ModContent.ProjectileType<FlameWall>(), 1, 0, -1, 1);
-                Projectile.NewProjectileDirect(null, Position.ToWorldCoordinates() - new Vector2(800, 5000), new Vector2(20, 0), ModContent.ProjectileType<FlameWall>(), 1, 0, -1, 0);
+            Projectile.NewProjectileDirect(null, Position.ToWorldCoordinates() + new Vector2(800, 0), new Vector2(-20, 0), ModContent.ProjectileType<FlameWall>(), 1, 0, -1, 1);
+            Projectile.NewProjectileDirect(null, Position.ToWorldCoordinates() - new Vector2(800, 0), new Vector2(20, 0), ModContent.ProjectileType<FlameWall>(), 1, 0, -1, 0);
             ChallengeGlobalNPC.isActive = true;
             Main.NewText("Survive for 60 seconds to unlock the Chest!", Color.Yellow);
             Main.SkipToTime(0, false);
@@ -187,7 +204,6 @@ namespace CthulhuRealm
 
         public override void KillMultiTile(int i, int j, int frameX, int frameY)
         {
-            // When the tile is removed, we need to remove the Tile Entity as well.
             ModContent.GetInstance<ChallengeChest>().Kill(i, j);
         }
         public override bool PreDraw(int i, int j, SpriteBatch spriteBatch)
@@ -214,6 +230,7 @@ namespace CthulhuRealm
             if (tileEntity.isChallengeCompleted)
             {
                 ModUtils.GetWeapon(out int type, out int amount);
+                ModUtils.GetArmorForPlayer(null, Main.LocalPlayer,true);
                 Main.LocalPlayer.QuickSpawnItem(null, type);
                 WorldGen.KillTile(i, j);
             }
@@ -226,6 +243,7 @@ namespace CthulhuRealm
         public override bool CanDrop(int i, int j, int type)
         {
             return type != ModContent.TileType<ChallengeChestTile>();
+
         }
     }
 
@@ -249,7 +267,7 @@ namespace CthulhuRealm
         public override void SetDefaults()
         {
             Projectile.width = 128;
-            Projectile.height = Main.maxTilesY - 2;
+            Projectile.height = 128;
             Projectile.aiStyle = -1;
             Projectile.hostile = true;
             Projectile.friendly = false;
@@ -269,6 +287,17 @@ namespace CthulhuRealm
         {
             target.KillMe(info.DamageSource, 999999, 0);
         }
+        public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
+        {
+            if(Projectile.Center.X > targetHitbox.X && Projectile.ai[0] == 0)
+                return true;
+
+            if(Projectile.Center.X < targetHitbox.X && Projectile.ai[0] == 1)
+                return true;
+
+
+            return false;
+        }
         public override bool PreDraw(ref Color lightColor)
         {
 
@@ -279,21 +308,21 @@ namespace CthulhuRealm
             if (Projectile.timeLeft <= 200)
                 progress = MathHelper.Lerp(0, 1, (float)(Projectile.timeLeft) / 200);
 
-            default(WallofFlamesShader).Draw(Projectile.Center, progress);
+            default(WallofFlamesShader).Draw(Projectile.Center, progress, (int)Projectile.ai[0]);
 
             return base.PreDraw(ref lightColor);
         }
         struct WallofFlamesShader
         {
             private static VertexRectangle rect = new();
-            public void Draw(Vector2 position, float progress)
+            public void Draw(Vector2 position, float progress, int side)
             {
                 MiscShaderData shader = GameShaders.Misc["CR:WallofFlames"].UseImage1(TextureAssets.Extra[193]);
                 shader.UseColor(Color.Red);
                 shader.UseSecondaryColor(Color.Crimson);
                 shader.UseShaderSpecificData(new Vector4(progress));
                 shader.Apply();
-                rect.Draw(position - Main.screenPosition, size: new Vector2(256, 20000));
+                rect.Draw(position - Main.screenPosition, size: new Vector2(256, 16000));
 
                 Main.pixelShader.CurrentTechnique.Passes[0].Apply();
                 
