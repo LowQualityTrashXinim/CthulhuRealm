@@ -1,1 +1,6 @@
-Modify this file with a description of your mod.
+Adds an extraction/roguelite mode within a special subworld, to enter the subworld you need to defeat Eye of Cthulhu and use the Realm Portal item that it drops.
+
+Credits:
+LQT-Xinim for code support
+
+this mod was made for tML first official modjam!

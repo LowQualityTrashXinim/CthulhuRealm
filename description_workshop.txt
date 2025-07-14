@@ -1,1 +1,8 @@
-This description will show up on the steam page, check out https://steamcommunity.com/comment/Guide/formattinghelp.
+[h1] Welcome To Cthulhu's Realm! [/h1] 
+
+this mod adds an extraction mode subworld, to enter the subworld you need to defeat Eye of Cthulhu and use the Realm Portal item that it drops (costs coins)
+
+Credits:
+LQT-Xinim for code support
+
+This mod was made for tModloader first official modjam!

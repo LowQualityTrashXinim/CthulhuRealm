@@ -1,4 +1,4 @@
 displayName = Cthulhu's Realm
-author = Xinim&amp;Rakan
-version = 0.1
+author = Xinim & Rakan
+version = 0.2
 modReferences = SubworldLibrary, StructureHelper@3.0

@@ -21,12 +21,11 @@ public class CthulhuRealmSubworld : SubworldLibrary.Subworld
 {
     public override int Width => 1331;
 
-    public override int Height => 855;
+    public override int Height => 865;
 
     public override List<GenPass> Tasks => new List<GenPass>
     {
         new PlaceRealm_Pass("PlaceRealm",1),
-        new PlaceChests_Pass("PlaceChallengeChests",1)
     };
 }
 
@@ -63,7 +62,10 @@ public class PlaceRealm_System : ModSystem
     public override void PreUpdateWorld()
     {
         if (!SubworldSystem.IsActive<CthulhuRealmSubworld>())
+        {
+            ChallengeGlobalNPC.isActive = false;
             return;
+        }
 
         TileEntity.UpdateStart();
         foreach (TileEntity te in TileEntity.ByID.Values)
@@ -78,7 +80,6 @@ public class PlaceRealm_System : ModSystem
         Main.spawnTileY = 343;
         Main.worldSurface = 400;
         Main.rockLayer = 479;
-
         StructureData structureData = Generator.GetStructureData("Content/Structures/CthulhuRealmSH", Mod);
         if (Generator.IsInBounds(structureData, new(0, 0)))
         {

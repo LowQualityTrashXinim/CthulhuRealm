@@ -21,8 +21,9 @@ Items: {
 
 	RealmPortal: {
 		DisplayName: Realm Portal
-		Tooltip: "Enter Cthulhu's Realm at the cost of 15 gold coins"
+		Tooltip: Enter Cthulhu's Realm at the cost of 15 gold coins
 	}
 }
 
 Projectiles.FlameWall.DisplayName: Flame Wall
+Tiles.ChallengeChestTile.InfoText: Costs 5 Gold Coins to open

@@ -18,6 +18,7 @@ using Terraria.GameContent.ItemDropRules;
 using Terraria.GameContent.LootSimulation;
 using Terraria.Graphics.Shaders;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ObjectData;
 
@@ -74,14 +75,14 @@ namespace CthulhuRealm
         public static bool isActive = false;
         public override void EditSpawnRate(Player player, ref int spawnRate, ref int maxSpawns)
         {
-            if (!isActive)
-                return;
+            if (!isActive || !SubworldSystem.IsActive<CthulhuRealmSubworld>())
+                return; 
             spawnRate /= 8;
         }
 
         public override void SetDefaults(NPC entity)
         {
-            if (SubworldSystem.Current is not CthulhuRealmSubworld)
+            if (!SubworldSystem.IsActive<CthulhuRealmSubworld>())
                 return;
 
             entity.knockBackResist *= 0.1f;
@@ -122,6 +123,13 @@ namespace CthulhuRealm
             //    var challengeRule = new LeadingConditionRule(new ChallengeDropRule()).OnSuccess(rule);
             //    npcLoot.Add(challengeRule);
             //}
+
+            if(npc.type == NPCID.EyeofCthulhu)
+            { 
+                
+                npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<RealmPortal>(),1));
+
+            }
         }
     }
     public class ChallengeChest : ModTileEntity
@@ -173,6 +181,7 @@ namespace CthulhuRealm
 
         public override string Texture => "Terraria/Images/Tiles_21";
         public override string HighlightTexture => "Terraria/Images/Misc/TileOutlines/Tiles_21";
+        public static LocalizedText InfoText { get; private set; }
         public override void SetStaticDefaults()
         {
             // Properties
@@ -199,9 +208,19 @@ namespace CthulhuRealm
             TileObjectData.newTile.Style = 2;
             TileObjectData.newTile.UsesCustomCanPlace = true;
             TileObjectData.addTile(Type);
-
+            InfoText = this.GetLocalization(nameof(InfoText));
         }
-
+        public override void MouseOver(int i, int j)
+        {
+            if (!TileEntity.TryGet(i, j, out ChallengeChest entity))
+                return;
+            if(entity.isChallengeActive || entity.isChallengeCompleted)
+                return;
+            Player player = Main.LocalPlayer;
+			player.cursorItemIconEnabled = true;
+			player.cursorItemIconID = -1;
+			player.cursorItemIconText = InfoText.Format("Costs 5 Gold Coins to open"); 
+        }
         public override void KillMultiTile(int i, int j, int frameX, int frameY)
         {
             ModContent.GetInstance<ChallengeChest>().Kill(i, j);
@@ -222,7 +241,7 @@ namespace CthulhuRealm
         {
             if (!TileEntity.TryGet(i, j, out ChallengeChest tileEntity))
                 return false;
-            if (!tileEntity.isChallengeActive && !tileEntity.isChallengeCompleted)
+            if (!tileEntity.isChallengeActive && !tileEntity.isChallengeCompleted && Main.LocalPlayer.BuyItem(Item.buyPrice(0,5)))
             {
                 tileEntity.ActivateChallenge();
                 return true;
